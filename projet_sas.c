@@ -7,9 +7,9 @@
 
 
 typedef struct{
-    char name[30];
-    char role[30];
-    char mdp[30];
+    char name[50];
+    char role[50];
+    char mdp[50];
 }user;
 
 typedef struct{
@@ -52,8 +52,6 @@ int motedepasse(char *mdp , char *username){
      int n = strlen(mdp);
      if(n<8)
         return 0;
-    if(strstr(mdp,username)!=NULL)
-        return 0;
     int a=0,b=0,c=0,d=0;
     for(int i=0;i<n;i++){
         if(isupper(mdp[i])){
@@ -66,7 +64,7 @@ int motedepasse(char *mdp , char *username){
             d=1;
         }
     }
-    if((a=1) && (b=1) && (c=1) && (d=1) ){
+    if((a==1) && (b==1) && (c==1) && (d==1) ){
         return 1;
     }else{
         return 0 ;
@@ -80,67 +78,44 @@ int username(char *name){
     }
     return 0;
 }
-
-void signup(){
-    user nv_user;
-    int count=0;
-    while (count <3) {
-        printf("saiser nom d'utilisateur :  ");
-        fgets(nv_user.name,50,stdin);
-        int ind=0;
-        if (username(nv_user.name)==1){
-           printf("nom deja utiliser\n");
-           count++;
-           ind++;
-           continue;
-        }
-        printf("saiser mote de passe\n");
-        fgets(nv_user.name,50,stdin);
-        
-        if (motedepasse(nv_user.mdp,nv_user.name)==0){
-           printf("le mote de passe est invalide\n");
-            count++;
-            ind++;
-        }
-        users[user_nb++]=nv_user;
-        if(ind == 0){
-           printf("inscription reussie\n");
-           strcpy(nv_user.role,"client");
-           break;
-        }
-    } 
-    
+void signup() {
+    char username[50];
+    char mdp[50]; 
+    printf("Nom d'utilisateur : ");
+    fgets(username,50,stdin);
+    printf("Mot de passe : ");
+    fgets(mdp,20,stdin);
+    if (motedepasse(mdp, username)!=1) {
+        printf("Mot de passe invalide\n");
+        return;
+    }
+    strcpy(users[user_nb].name, username);
+    strcpy(users[user_nb].mdp, mdp);
+    strcpy(users[user_nb].role, "Client");
+    user_nb++;
+    printf("Inscription reussie\n");
 }
 
-void signin(){
-        char username[50];
-        char mdp[50];
-        int tentative=0 ;
-        printf("entrer nom d'utilisateur");
-        fgets(username,50,stdin);
-        int ind = -1 ;
-        for(int i=0; i<user_nb ; i++){
-            if(strcmp(users[i].name,username)==0){
-                ind=i;
-                break;
-            }
-        }
-        if(ind = -1){
-            printf(" le nom d'utilisateur introvable");
-            return;
-        }
+int signin(){
+    char username[50];
+    char mdp[50];
+    int tentative=0 ;
 
-        do
-        {
-        printf("entrer le mote de passe ");
+    while (tentative < 3) {
+        printf("Nom d'utilisateur : ");
+        fgets(username,50,stdin);
+        printf("Mot de passe : ");
         fgets(mdp,50,stdin);
-            if(strcmp(users[ind].mdp,mdp)==0){
-                printf("connexion reussie");
-                 return;
-            }else{
-                 printf("mote de passe inccorect il reste que %d tentative", 2-tentative);
+        for (int i = 0; i < user_nb; i++) {
+            if (strcmp(users[i].name, username) == 0 && strcmp(users[i].mdp, mdp) == 0) {
+                return i;
             }
-        } while (tentative=2);
+        }
+        tentative++;
+        printf("Nom d'utilisateur ou mot de passe incorrect\n");
+    }
+    printf("Compte verrouille\n");
+    return -1;
         
 }
 
@@ -161,33 +136,163 @@ void ajouter_reclamation(char* username) {
     printf("ajouter un motif : ");
     fgets(reclamations[reclamation_nb].motif,50,stdin);
     printf("ajouter une description : ");
-    scanf(reclamations[reclamation_nb].description,200,stdin);
+    fgets(reclamations[reclamation_nb].description,200,stdin);
     printf("ajouter une categorie : ");
-    scanf(reclamations[reclamation_nb].categorie,50,stdin);
+    fgets(reclamations[reclamation_nb].categorie,50,stdin);
     strcpy(reclamations[reclamation_nb].status, "en attente");
     sprintf(reclamations[reclamation_nb].date, "%02d-%02d-%04d", tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900);
     ordre_priorit(&reclamations[reclamation_nb]);
     reclamation_nb++;
-    printf("Réclamation ajoutee\n");
+    printf("Reclamation ajoutee\n");
+}
+
+void afficherreclamation() {
+    int i;
+    for (i = 0; i < reclamation_nb; i++) {
+
+        printf("ID: %d, Username: %s, Motif: %s, Description: %s, Categorie: %s, Statut: %s, Date: %s, Priorite: %s\n",
+            reclamations[i].id, reclamations[i].name, reclamations[i].motif, reclamations[i].description,
+            reclamations[i].categorie, reclamations[i].status, reclamations[i].date, reclamations[i].priority);
+    }
+}
+
+void modifier_reclamation() {
+    int id, i;
+    printf("ID de la reclamation a modifier : ");
+    scanf("%d", &id);
+    for (i = 0; i < reclamation_nb ; i++) {
+        if (reclamations[i].id == id)  {
+                printf("modifier un motif : ");
+                fgets(reclamations[i].motif,50,stdin);
+                printf("modifier une description : ");
+                fgets(reclamations[i].description,200,stdin);
+                printf("modifier une categorie : ");
+                fgets(reclamations[i].categorie,50,stdin);
+                printf("modifier status");
+                fgets(reclamations[i].categorie,50,stdin);
+            printf("reclamation modifiee\n");
+            return;
+        }
+    }
+    printf("reclamation non trouvee ou acces refuse\n");
+}
+int espaceadmin(){
+    char nom[50];
+    char mdp[50];
+    printf("Nom d'admin : ");
+    scanf("%s",nom);
+    printf("Mot de passe : ");
+    scanf("%s",mdp);
+
+    if(strcmp(nom,"admin")==0 && strcmp(mdp,"Admin@1234")==0){
+            printf("bonjour admin\n");
+            return 1 ;
+    }else{
+        printf("Nom d'utilisateur ou mot de passe incorrect\n");
+        return 0;
+    }
+    
+}
+
+void menuadmin(){
+    printf("________________________________________\n");
+    printf("___________       MENU       ___________\n");
+    printf("________________________________________\n");
+    printf(" 1. Ajouter  reclamation________________\n");
+    printf(" 2. Afficher reclamations_______________\n");
+    printf(" 3. Modifier reclamation________________\n");
+    printf(" 4. Traiter  reclamation________________\n");
+    printf(" 5. Rechercher reclamation______________\n");
+    printf(" 6. Afficher par priorite_______________\n");
+    printf(" 7. Statistiques________________________\n");
+    printf(" 8. Rapport journalier__________________\n");
+    printf(" 9. Deconnexion_________________________\n");
+    printf("________________________________________\n");
+    printf("_______     choiser un choix     _______\n");
+    printf("________________________________________\n");
+    scanf("%d", &choix); 
+    getchar();   
 }
 
 int main(){
-    
+    char role[50];
+    char username[50];
+    int new;
+    reclamations = (reclamation*) malloc(max_users * sizeof(reclamation));
+
     do{
         menu();
         switch (choix){
         case 1:
-            signup();
+                signup();
             break;
         case 2:
-            signin();
+                signin();
             break;
-        case 3:
-            printf("Quitter");
+        case 3 : 
+               if(espaceadmin()==1){
+
+                    do{
+                        menuadmin();
+                        switch (choix){
+                            case 1:
+                                    strcpy(username,"admin");
+                                    ajouter_reclamation(username);
+                                break;
+                            case 2:
+                                    afficherreclamation();
+                                break;
+                            case 3 : 
+                            modifier_reclamation();
+                                break;
+                            case 4:
+                                break;
+                            case 5:
+                                break;
+                            case 6:
+                                break;
+                            case 7:
+                                break;
+                            case 8:
+                                break;
+                            case 9:
+                                break;
+                            default:
+                                break;
+                        }
+                    } while (choix !=9 );
+    
+               }
+            break;
+        case 4:
+               new = signin();
+               strcpy(username, users[new].name);
+                printf("Bonjour, %s \n", username);
+                
+
+                for(int i=0;i<user_nb;i++){
+                    if(strcmp(users[i].role,"Client")==0){
+                        printf("menu clt");
+                    }
+                }
+            break;
+        case 5:
+               new = signin();
+               strcpy(username, users[new].name);
+                printf("Bonjour, %s \n", username);
+                
+
+                for(int i=0;i<user_nb;i++){
+                    if(strcmp(users[i].role,"Agent")==0){
+                        printf("menu clt");
+                    }
+                }
+            break;
+        case 6:
+                printf("Quitter");
         default:
             break;
         }
-    } while (choix !=3 );
+    } while (choix !=6 );
     
 }
-
