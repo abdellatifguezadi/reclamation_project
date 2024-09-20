@@ -4,6 +4,8 @@
 #include<time.h>
 #include<ctype.h>
 #define max_users 100
+#define max_rec 100
+
 
 
 typedef struct{
@@ -24,7 +26,7 @@ typedef struct{
 }reclamation;
 
 user users[max_users] ;
-reclamation *reclamations = NULL;
+reclamation reclamations[max_rec];
 int user_nb =0;
 int reclamation_nb = 0;
 int choix;
@@ -48,7 +50,7 @@ void menu(){
 
 }
 
-int motedepasse(char *mdp , char *username){
+int motedepasse(char mdp[] , char username[]){
      int n = strlen(mdp);
      if(n<8)
         return 0;
@@ -64,11 +66,15 @@ int motedepasse(char *mdp , char *username){
             d=1;
         }
     }
-    if((a==1) && (b==1) && (c==1) && (d==1) ){
-        return 1;
-    }else{
-        return 0 ;
+    if(!a || !b || !c || !d ){
+        return 0;
+        printf("utiliser les alphabet et les chifres et les symboles");
     }
+    if(strstr(mdp,username)!=NULL){
+        printf("ne utiliser pas le nom dans pasword\n");
+        return 0;
+    }   
+    return 1;
 }
 int username(char *name){
     for(int i=0;i<user_nb;i++){
@@ -82,9 +88,9 @@ void signup() {
     char username[50];
     char mdp[50]; 
     printf("Nom d'utilisateur : ");
-    fgets(username,50,stdin);
+    scanf("%s",username);
     printf("Mot de passe : ");
-    fgets(mdp,20,stdin);
+    scanf("%s",mdp);
     if (motedepasse(mdp, username)!=1) {
         printf("Mot de passe invalide\n");
         return;
@@ -148,6 +154,8 @@ void ajouter_reclamation(char* username) {
 
 void afficherreclamation() {
     int i;
+    if (reclamation_nb==0)
+    printf("il ya aucune reclamation");
     for (i = 0; i < reclamation_nb; i++) {
 
         printf("ID: %d, Username: %s, Motif: %s, Description: %s, Categorie: %s, Statut: %s, Date: %s, Priorite: %s\n",
@@ -160,6 +168,7 @@ void modifier_reclamation() {
     int id, i;
     printf("ID de la reclamation a modifier : ");
     scanf("%d", &id);
+    getchar();
     for (i = 0; i < reclamation_nb ; i++) {
         if (reclamations[i].id == id)  {
                 printf("modifier un motif : ");
@@ -169,7 +178,7 @@ void modifier_reclamation() {
                 printf("modifier une categorie : ");
                 fgets(reclamations[i].categorie,50,stdin);
                 printf("modifier status");
-                fgets(reclamations[i].categorie,50,stdin);
+                fgets(reclamations[i].status,50,stdin);
             printf("reclamation modifiee\n");
             return;
         }
@@ -214,11 +223,43 @@ void menuadmin(){
     getchar();   
 }
 
+void traiter_reclamation() {
+    int id, i;
+    printf("ID de la reclamation a traiter : ");
+    scanf("%d", &id);
+    for (i = 0; i < reclamation_nb; i++) {
+        if (reclamations[i].id == id) {
+            printf("Changer le statut : ");
+            fgets(reclamations[i].status,50,stdin);
+            printf("reclamation traitee\n");
+            return;
+        }
+    }
+    printf("reclamation non trouvee\n");
+}
+
+
+void recherch_Reclamation() {
+    int id, i;
+    printf("ID de la réclamation à rechercher : ");
+    scanf("%d", &id);
+    for (i = 0; i < reclamation_nb; i++) {
+        if (reclamations[i].id == id) {
+            printf("ID: %d\n, Utilisateur: %s\n Motif: %s\n Description: %s\n Catégorie: %s\n Statut: %s\n Date: %s\n",
+                reclamations[i].id, reclamations[i].name, reclamations[i].motif, reclamations[i].description,
+                reclamations[i].categorie, reclamations[i].status, reclamations[i].date);
+            return;
+        }
+    }
+    printf("Réclamation non trouvée\n");
+}
+
+
 int main(){
     char role[50];
     char username[50];
     int new;
-    reclamations = (reclamation*) malloc(max_users * sizeof(reclamation));
+
 
     do{
         menu();
@@ -243,13 +284,16 @@ int main(){
                                     afficherreclamation();
                                 break;
                             case 3 : 
-                            modifier_reclamation();
+                                modifier_reclamation();
                                 break;
                             case 4:
+                                traiter_reclamation();
                                 break;
                             case 5:
+                                afficherreclamation();
                                 break;
                             case 6:
+
                                 break;
                             case 7:
                                 break;
