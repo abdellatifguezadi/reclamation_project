@@ -1,8 +1,8 @@
 #include<stdio.h>
-#include<stdlib.h>
 #include<string.h>
 #include<time.h>
 #include<ctype.h>
+#include<unistd.h>
 #define max_users 100
 #define max_rec 100
 
@@ -38,8 +38,8 @@ void menu(){
     printf("________________________________________\n");
     printf(" 1  : Sign Up \n");
     printf(" 2  : Espace admin\n");
-    printf(" 3  : Espace agent de reclamation\n");
-    printf(" 4  : Espace client\n");
+    printf(" 3  : Espace client\n");
+    printf(" 4  : Espace agent de reclamation\n");
     printf(" 5 : Quitter\n");
     printf("________________________________________\n");
     printf("_______     choiser un choix     _______\n");
@@ -76,7 +76,7 @@ int motedepasse(char mdp[] , char username[]){
     }   
     return 1;
 }
-int username(char *name){
+int verifiername(char *name){
     for(int i=0;i<user_nb;i++){
         if(strcmp(users[i].name,name)==0){
             return 1 ;
@@ -90,6 +90,10 @@ void signup() {
     printf("Nom d'utilisateur : ");
     fgets(username, sizeof(username), stdin);
     username[strcspn(username, "\n")] = 0;
+    if(verifiername(username)==1) {
+        printf("nom invalide\n");
+        return;
+    }
     printf("Mot de passe : ");
     fgets(mdp, sizeof(mdp), stdin);
     mdp[strcspn(mdp, "\n")] = 0;
@@ -103,8 +107,6 @@ void signup() {
     user_nb++;
     printf("Inscription réussie\n");
 }
-
-#include <unistd.h>
 
 int signin() {
     char username[50];
@@ -155,7 +157,6 @@ void ajouter_reclamation(char username[]) {
     struct tm tm = *localtime(&t);
     reclamations[reclamation_nb].id = reclamation_nb + 1;
     strcpy(reclamations[reclamation_nb].name, username);
-    strcpy( users[reclamation_nb].name , reclamations[reclamation_nb].name);
     
     printf("ajouter un motif : ");
     fgets(reclamations[reclamation_nb].motif, 50, stdin);
@@ -188,6 +189,26 @@ void afficherreclamation() {
         printf("ID: %d, nom: %s, motif: %s, description: %s, categorie: %s, statut: %s, date: %s, priorite: %s\n",
             reclamations[i].id, reclamations[i].name, reclamations[i].motif, reclamations[i].description,
             reclamations[i].categorie, reclamations[i].status, reclamations[i].date, reclamations[i].priority);
+    }
+}
+
+void afficherreclamationclient(char username[]) {
+    int i;
+    int trouve = 0;
+    if (reclamation_nb == 0) {
+        printf("Il n'y a aucune reclamation.\n");
+    } else {
+        for (i = 0; i < reclamation_nb; i++) {
+            if (strcmp(username, reclamations[i].name) == 0) {
+                trouve = 1;
+                printf("ID: %d, nom: %s, motif: %s, description: %s, categorie: %s, statut: %s, date: %s, priorite: %s\n",
+                    reclamations[i].id, reclamations[i].name, reclamations[i].motif, reclamations[i].description,
+                    reclamations[i].categorie, reclamations[i].status, reclamations[i].date, reclamations[i].priority);
+            }
+        }
+        if (trouve==0) {
+            printf("Aucune réclamation trouvée pour l'utilisateur %s.\n", username);
+        }
     }
 }
 
@@ -251,7 +272,8 @@ void menuadmin(){
     printf(" 6. trie par priorite\n");
     printf(" 7. Statistiques\n");
     printf(" 8. Supprimer reclamation\n");
-    printf(" 9. Deconnexion\n");
+    printf(" 9. Changer de role\n");
+    printf(" 10. Deconnexion\n");
     printf("________________________________________\n");
     printf("_______     choiser un choix     _______\n");
     printf("________________________________________\n");
@@ -259,6 +281,40 @@ void menuadmin(){
     getchar();   
 }
 
+void menuagent(){
+    printf("________________________________________\n");
+    printf("___________       MENU       ___________\n");
+    printf("________________________________________\n");
+    printf(" 1. Ajouter  reclamation\n");
+    printf(" 2. Afficher reclamations\n");
+    printf(" 3. Modifier reclamation\n");
+    printf(" 4. Traiter  reclamation\n");
+    printf(" 5. Rechercher reclamation\n");
+    printf(" 6. Supprimer reclamation\n");
+    printf(" 7. Deconnexion\n");
+    printf("________________________________________\n");
+    printf("_______     choiser un choix     _______\n");
+    printf("________________________________________\n");
+    scanf("%d", &choix); 
+    getchar();   
+}
+
+void menuclient(){
+    printf("________________________________________\n");
+    printf("___________       MENU       ___________\n");
+    printf("________________________________________\n");
+    printf(" 1. Ajouter  reclamation\n");
+    printf(" 2. Afficher reclamations\n");
+    printf(" 3. Modifier reclamation\n");
+    printf(" 4. Rechercher reclamation\n");
+    printf(" 5. Supprimer reclamation\n");
+    printf(" 6. Deconnexion\n");
+    printf("________________________________________\n");
+    printf("_______     choiser un choix     _______\n");
+    printf("________________________________________\n");
+    scanf("%d", &choix); 
+    getchar();   
+}
 void traiter_reclamation() {
     int id, i;
     printf("ID de la reclamation a traiter : ");
@@ -473,6 +529,27 @@ void rapport_journalier() {
     }
 }
 
+void changetrole(){
+    int i;
+    char name[50];
+    char role[50];
+    printf("Entrez le nom : ");
+    fgets(name, sizeof(name), stdin);
+    name[strcspn(name, "\n")] = 0; 
+
+    for(i = 0; i < user_nb; i++){
+        if (strcmp(name, users[i].name) == 0){
+            printf("Choisissez le role : ");
+            fgets(role, sizeof(role), stdin);
+            role[strcspn(role, "\n")] = 0; 
+            strcpy(users[i].role, role);
+            printf("Role mis a jour avec succes.\n");
+            return; 
+        }
+    }
+    printf("nom non trouve.\n");
+}
+
 
 
 
@@ -488,10 +565,7 @@ int main(){
         case 1:
                 signup();
             break;
-        case 2:
-                signin();
-            break;
-        case 3 : 
+        case 2 : 
                if(espaceadmin()==1){
                     do{
                         menuadmin();
@@ -545,13 +619,50 @@ int main(){
                                 supprimer_reclamation();
                                 break;
                             case 9:
+                                changetrole();
+                                break;
+                            case 10:
                                 break;
                             default:
                                 printf("le choix est invalide");
                                 break;
                         }
-                    } while (choix !=9 );
+                    } while (choix !=10 );
     
+               }
+            break;
+        case 3:
+            new = signin();
+               strcpy(username, users[new].name);
+                printf("Bonjour, %s \n", username);
+                
+
+                for(int i=0;i<user_nb;i++){
+                    if(strcmp(users[new].role,"Client")==0){
+                        do{
+                        menuclient();
+                        switch (choix){
+                            case 1:
+                                ajouter_reclamation(username);
+                                break;
+                            case 2:
+                                afficherreclamationclient(username);
+                                break;
+                            case 3 : 
+                                break;
+                            case 5:
+                                break;
+                            case 6:
+                                break;
+
+                            case 7:
+                                break;
+                            default:
+                                printf("le choix est invalide");
+                                break;
+                        }
+                    } while (choix !=7 );
+                    }
                }
             break;
         case 4:
@@ -561,29 +672,70 @@ int main(){
                 
 
                 for(int i=0;i<user_nb;i++){
-                    if(strcmp(users[i].role,"Client")==0){
-                        printf("menu clt");
-                    }
-                }
+                    if(strcmp(users[new].role,"Agent")==0){
+                        do{
+                        menuagent();
+                        switch (choix){
+                            case 1:
+                                strcpy(username,"admin");
+                                ajouter_reclamation(username);
+                                break;
+                            case 2:
+                                afficherreclamation();
+                                break;
+                            case 3 : 
+                                modifier_reclamation();
+                                break;
+                            case 4:
+                                traiter_reclamation();
+                                break;
+                            case 5:
+                                printf("pour recherche par ID choiser 1 et par name choiser 2 et pare date 3 et par categorie choiser 4 et par status choiser 5  ");
+                                int ch ;
+                                scanf("%d",&ch);
+                                switch (ch)
+                                {
+                                    case 1 :
+                                            recherchid_Reclamation();
+                                        break;
+                                    case 2 :
+                                            recherchname_Reclamation();
+                                        break;
+                                    case 3 :
+                                            recherchdate_Reclamation();
+                                        break;
+                                    case 4 :
+                                            recherchcategorie_Reclamation();
+                                        break;
+                                    case 5 :
+                                            recherchstatut_Reclamation();
+                                        break;
+                                    default:
+                                            printf("le choix est invalide");
+                                        break;
+                                }
+                                break;
+                            case 6:
+                                supprimer_reclamation();
+                                break;
+
+                            case 7:
+                                break;
+                            default:
+                                printf("le choix est invalide");
+                                break;
+                        }
+                    } while (choix !=7 );
+    
+               }
+            }
             break;
         case 5:
-               new = signin();
-               strcpy(username, users[new].name);
-                printf("Bonjour, %s \n", username);
-                
-
-                for(int i=0;i<user_nb;i++){
-                    if(strcmp(users[i].role,"Agent")==0){
-                        printf("menu agent");
-                    }
-                }
-            break;
-        case 6:
                 printf("Quitter");
         default:
                 printf("le choix est invalide");
             break;
         }
-    } while (choix !=6 );
+    } while (choix !=5 );
     
 }
