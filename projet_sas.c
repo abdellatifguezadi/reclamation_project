@@ -1,12 +1,11 @@
 #include<stdio.h>
+#include<stdlib.h>
 #include<string.h>
 #include<time.h>
 #include<ctype.h>
 #include<unistd.h>
 #define max_users 100
 #define max_rec 100
-
-
 
 typedef struct{
     char name[50];
@@ -22,7 +21,8 @@ typedef struct{
     char categorie [50];
     char status[50];
     char date[50];
-    char date_r[20];
+    time_t date_ajt ;
+    time_t date_traitement;
     char priority[50];
 }reclamation;
 
@@ -30,7 +30,7 @@ user users[max_users] ;
 reclamation reclamations[max_rec];
 int user_nb =0;
 int reclamation_nb = 0;
-int choix;
+int choix , ch1;
 
 void menu(){
     printf("________________________________________\n");
@@ -76,6 +76,7 @@ int motedepasse(char mdp[] , char username[]){
     }   
     return 1;
 }
+
 int verifiername(char *name){
     for(int i=0;i<user_nb;i++){
         if(strcmp(users[i].name,name)==0){
@@ -84,6 +85,7 @@ int verifiername(char *name){
     }
     return 0;
 }
+
 void signup() {
     char username[50];
     char mdp[50];
@@ -91,21 +93,21 @@ void signup() {
     fgets(username, sizeof(username), stdin);
     username[strcspn(username, "\n")] = 0;
     if(verifiername(username)==1) {
-        printf("nom invalide\n");
+        printf("Nom invalide\n");
         return;
     }
     printf("Mot de passe : ");
     fgets(mdp, sizeof(mdp), stdin);
     mdp[strcspn(mdp, "\n")] = 0;
     if (motedepasse(mdp, username) != 1) {
-        printf("Mot de passe invalide\n");
+        printf("mot de passe invalide\n");
         return;
     }
     strcpy(users[user_nb].name, username);
     strcpy(users[user_nb].mdp, mdp);
     strcpy(users[user_nb].role, "Client");
     user_nb++;
-    printf("Inscription réussie\n");
+    printf("Inscription reussie\n");
 }
 
 int signin() {
@@ -132,8 +134,6 @@ int signin() {
     return -1;
 }
 
-
-
 void ordre_priorit(reclamation *rec) {
     if (strstr(rec->description, "urgent") != NULL ||
         strstr(rec->motif, "grave") != NULL ||
@@ -143,7 +143,7 @@ void ordre_priorit(reclamation *rec) {
         strcpy(rec->priority, "haute");
     } else if (strstr(rec->description, "important") != NULL ||
                strstr(rec->motif, "modere") != NULL ||
-               strstr(rec->description, "important") != NULL ||
+               strstr(rec->description, "rappel") != NULL ||
                strstr(rec->description, "necessaire") != NULL) {
         strcpy(rec->priority, "moyenne");
     } else {
@@ -151,11 +151,10 @@ void ordre_priorit(reclamation *rec) {
     }
 }
 
-
 void ajouter_reclamation(char username[]) {
     time_t t = time(NULL);
     struct tm tm = *localtime(&t);
-    reclamations[reclamation_nb].id = reclamation_nb + 1;
+    reclamations[reclamation_nb].id = rand() % 10000 + 1;
     strcpy(reclamations[reclamation_nb].name, username);
     
     printf("ajouter un motif : ");
@@ -171,14 +170,12 @@ void ajouter_reclamation(char username[]) {
     reclamations[reclamation_nb].categorie[strcspn(reclamations[reclamation_nb].categorie, "\n")] = 0;
 
     strcpy(reclamations[reclamation_nb].status, "en cours");    
-    sprintf(reclamations[reclamation_nb].date, "%02d-%02d-%04d %02d:%02d:%02d", tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900, tm.tm_hour, tm.tm_min, tm.tm_sec);
-    sprintf(reclamations[reclamation_nb].date_r, "%02d-%02d-%04d", tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900);
-    
+    sprintf(reclamations[reclamation_nb].date, "%02d-%02d-%04d", tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900);
+    reclamations[reclamation_nb].date_ajt = time(NULL);
     ordre_priorit(&reclamations[reclamation_nb]);
     reclamation_nb++;
     printf("Reclamation ajoutee\n");
 }
-
 
 void afficherreclamation() {
     int i;
@@ -201,9 +198,9 @@ void afficherreclamationclient(char username[]) {
         for (i = 0; i < reclamation_nb; i++) {
             if (strcmp(username, reclamations[i].name) == 0) {
                 trouve = 1;
-                printf("ID: %d, nom: %s, motif: %s, description: %s, categorie: %s, statut: %s, date: %s, priorite: %s\n",
+                printf("ID: %d, nom: %s, motif: %s, description: %s, categorie: %s, statut: %s, date: %s\n",
                     reclamations[i].id, reclamations[i].name, reclamations[i].motif, reclamations[i].description,
-                    reclamations[i].categorie, reclamations[i].status, reclamations[i].date, reclamations[i].priority);
+                    reclamations[i].categorie, reclamations[i].status, reclamations[i].date);
             }
         }
         if (trouve==0) {
@@ -230,10 +227,6 @@ void modifier_reclamation() {
             printf("modifier une categorie : ");
             fgets(reclamations[i].categorie, 50, stdin);
             reclamations[i].categorie[strcspn(reclamations[i].categorie, "\n")] = 0;
-
-            printf("modifier status : ");
-            fgets(reclamations[i].status, 50, stdin);
-            reclamations[i].status[strcspn(reclamations[i].status, "\n")] = 0;
 
             printf("reclamation modifiee\n");
             return;
@@ -270,14 +263,14 @@ void menuadmin(){
     printf(" 4. Traiter  reclamation\n");
     printf(" 5. Rechercher reclamation\n");
     printf(" 6. trie par priorite\n");
-    printf(" 7. Statistiques\n");
-    printf(" 8. Supprimer reclamation\n");
-    printf(" 9. Changer de role\n");
+    printf(" 7. Supprimer reclamation\n");
+    printf(" 8. Changer de role\n");
+    printf(" 9. Statistique\n");
     printf(" 10. Deconnexion\n");
     printf("________________________________________\n");
     printf("_______     choiser un choix     _______\n");
     printf("________________________________________\n");
-    scanf("%d", &choix); 
+    scanf("%d", &ch1); 
     getchar();   
 }
 
@@ -295,7 +288,7 @@ void menuagent(){
     printf("________________________________________\n");
     printf("_______     choiser un choix     _______\n");
     printf("________________________________________\n");
-    scanf("%d", &choix); 
+    scanf("%d", &ch1); 
     getchar();   
 }
 
@@ -305,16 +298,16 @@ void menuclient(){
     printf("________________________________________\n");
     printf(" 1. Ajouter  reclamation\n");
     printf(" 2. Afficher reclamations\n");
-    printf(" 3. Modifier reclamation\n");
-    printf(" 4. Rechercher reclamation\n");
-    printf(" 5. Supprimer reclamation\n");
-    printf(" 6. Deconnexion\n");
+    printf(" 3. Supprimer reclamation\n");
+    printf(" 4. Modifier reclamation\n");
+    printf(" 5. Deconnexion\n");
     printf("________________________________________\n");
     printf("_______     choiser un choix     _______\n");
     printf("________________________________________\n");
-    scanf("%d", &choix); 
+    scanf("%d", &ch1); 
     getchar();   
 }
+
 void traiter_reclamation() {
     int id, i;
     printf("ID de la reclamation a traiter : ");
@@ -326,12 +319,12 @@ void traiter_reclamation() {
             fgets(reclamations[i].status, 50, stdin);
             reclamations[i].status[strcspn(reclamations[i].status, "\n")] = 0;
             printf("reclamation traitee\n");
+            reclamations[i].date_traitement = time(NULL);
             return;
         }
     }
     printf("reclamation non trouvee\n");
 }
-
 
 void recherchid_Reclamation() {
     int id, i , trouve=0;
@@ -350,6 +343,7 @@ void recherchid_Reclamation() {
         printf("reclamation non trouvee\n");
     }
 }
+
 void recherchname_Reclamation() {
     char name[50];
     int trouve = 0;
@@ -381,7 +375,7 @@ void recherchdate_Reclamation() {
     date[strcspn(date, "\n")] = 0;
 
     for (int i = 0; i < reclamation_nb; i++) {
-        if (strcmp(reclamations[i].date_r, date) == 0) {
+        if (strcmp(reclamations[i].date, date) == 0) {
             printf("ID: %d\n, nom: %s\n motif: %s\n description: %s\n categorie: %s\n statut: %s\n date: %s\n",
                    reclamations[i].id, reclamations[i].name, reclamations[i].motif, reclamations[i].description,
                    reclamations[i].categorie, reclamations[i].status, reclamations[i].date);
@@ -416,7 +410,6 @@ void recherchstatut_Reclamation() {
     }
 }
 
-
 void recherchcategorie_Reclamation() {
     char categorie[50];
     int trouve = 0;
@@ -439,10 +432,9 @@ void recherchcategorie_Reclamation() {
     }
 }
 
-
 void trier_Priorite() {
     int i, j;
-    reclamation temp;
+ reclamation temp;
 
     for (i = 0; i < reclamation_nb - 1; i++) {
         for (j = 0; j < reclamation_nb - i - 1; j++) {
@@ -461,7 +453,7 @@ void trier_Priorite() {
         }
     }
 
-    printf("Le tri par priorité est terminé\n");
+    printf("Le tri par priorit est termine\n");
 }
 
 void afficher_statistiques() {
@@ -479,15 +471,23 @@ void afficher_statistiques() {
             rec_cours++;
     }
 
-    printf("total des reclamations : %d\n", total_rec);
-    printf("reclamations resolues : %d\n", rec_resolues);
-    printf("reclamations rejete : %d\n", rec_rejete);
-    printf("reclamations en cours : %d\n", rec_cours);
+   printf("Total des reclamations : %d\n", total_rec);
+
+if (total_rec > 0) {
+    printf("Reclamations resolues : %d (%.2f%%)\n", rec_resolues, (rec_resolues / (float)total_rec) * 100);
+    printf("Reclamations rejete : %d (%.2f%%)\n", rec_rejete, (rec_rejete / (float)total_rec) * 100);
+    printf("Reclamations en cours : %d (%.2f%%)\n", rec_cours, (rec_cours / (float)total_rec) * 100);
+} else {
+    printf("Aucune reclamation pour calculer le taux.\n");
+    printf("Reclamations resolues : %d (N/A)\n", rec_resolues);
+    printf("Reclamations rejete : %d (N/A)\n", rec_rejete);
+    printf("Reclamations en cours : %d (N/A)\n", rec_cours);
+}
 }
 
 void supprimer_reclamation() {
     int id ;
-    printf("ID de la reclamation a rechercher : ");
+    printf("ID de la reclamation a supprimer : ");
     scanf("%d",&id);
     int index = -1;
     for (int i = 0; i < reclamation_nb; i++) {
@@ -501,7 +501,7 @@ void supprimer_reclamation() {
             reclamations[i] = reclamations[i + 1];
         }
         reclamation_nb--;
-        printf("reclamation supprimee avec succès.\n");
+        printf("reclamation supprimee \n");
     } else {
         printf("reclamation introuvable.\n");
     }
@@ -514,13 +514,13 @@ void rapport_journalier() {
     sprintf(date_aujourdhui, "%02d-%02d-%04d", tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900);
 
     printf("Rapport journalier pour le %s :\n", date_aujourdhui);
-    printf("Nouvelles réclamations :\n");
+    printf("Nouvelles reclamations :\n");
 
     int nouvelles_reclamations = 0;
     int reclamations_traitees = 0;
 
     for (int i = 0; i < reclamation_nb; i++) {
-        if (strcmp(reclamations[i].date_r, date_aujourdhui) == 0) {
+        if (strcmp(reclamations[i].date, date_aujourdhui) == 0) {
             printf("ID: %d, Nom: %s, Motif: %s, Description: %s, Catégorie: %s, Statut: %s, Priorité: %s\n",
                    reclamations[i].id, reclamations[i].name, reclamations[i].motif, reclamations[i].description,
                    reclamations[i].categorie, reclamations[i].status, reclamations[i].priority);
@@ -539,10 +539,7 @@ void changetrole(){
 
     for(i = 0; i < user_nb; i++){
         if (strcmp(name, users[i].name) == 0){
-            printf("Choisissez le role : ");
-            fgets(role, sizeof(role), stdin);
-            role[strcspn(role, "\n")] = 0; 
-            strcpy(users[i].role, role);
+            strcpy(users[i].role,"Agent");
             printf("Role mis a jour avec succes.\n");
             return; 
         }
@@ -550,13 +547,97 @@ void changetrole(){
     printf("nom non trouve.\n");
 }
 
+void supprimer_reclamationclient(char username[]) {
+    int id;
+    time_t now = time(NULL);
+    printf("ID de la reclamation a supprimer : ");
+    scanf("%d", &id);
+    getchar();
+    int ind = -1;
 
+    for (int i = 0; i < reclamation_nb; i++) {
+        if (reclamations[i].id == id && strcmp(reclamations[i].name, username) == 0) {
+            double diff = difftime(now, reclamations[i].date_ajt );
+            if (diff <= 30) {
+                ind = i;
+                break;
+            } else {
+                printf("la reclamation a plus de 24 heures\n");
+                return;
+            }
+        }
+    }
 
+    if (ind != -1) {
+        for (int i = ind; i < reclamation_nb - 1; i++) {
+            reclamations[i] = reclamations[i + 1];
+        }
+        reclamation_nb--;
+        printf("reclamation supprimee \n");
+    } else {
+        printf("reclamation introuvable\n");
+    }
+}
+
+void modifier_reclamationclient(char username[]) {
+    int id, i;
+    time_t now = time(NULL);
+    printf("ID de la reclamation a modifier : ");
+    scanf("%d", &id);
+    getchar();
+
+    for (i = 0; i < reclamation_nb; i++) {
+        if (reclamations[i].id == id && strcmp(reclamations[i].name, username) == 0) {
+            double diff = difftime(now, reclamations[i].date_ajt);
+            if (diff <= 3*60) {
+                printf("modifier un motif : ");
+                fgets(reclamations[i].motif, sizeof(reclamations[i].motif), stdin);
+                reclamations[i].motif[strcspn(reclamations[i].motif, "\n")] = 0;
+
+                printf("modifier une description : ");
+                fgets(reclamations[i].description, sizeof(reclamations[i].description), stdin);
+                reclamations[i].description[strcspn(reclamations[i].description, "\n")] = 0;
+
+                printf("modifier une categorie : ");
+                fgets(reclamations[i].categorie, sizeof(reclamations[i].categorie), stdin);
+                reclamations[i].categorie[strcspn(reclamations[i].categorie, "\n")] = 0;
+
+                printf("reclamation modifiee\n");
+                return;
+            } else {
+                printf("la reclamation a plus de 24 heures.\n");
+                return;
+            }
+        }
+    }
+    printf("reclamation non trouvee ou acces refuse.\n");
+}
+
+void afficher_delai() {
+    double total_delai = 0;
+    int nb = 0;
+
+    for (int i = 0; i < reclamation_nb; i++) {
+        if (strcmp(reclamations[i].status, "en cours") != 0) {
+            double delai = difftime(reclamations[i].date_traitement, reclamations[i].date_ajt);
+            total_delai = total_delai + delai;
+            nb++;
+        }
+    }
+
+    if (nb > 0) {
+        double delai_moyen = total_delai / nb;
+        printf("Delai moyen de traitement : %.2f secondes\n", delai_moyen);
+    } else {
+        printf("Aucune reclamation traitee pour calculer le delai moyen.\n");
+    }
+}
 
 int main(){
     char role[50];
     char username[50];
     int new;
+    int indclt ;
 
 
     do{
@@ -569,7 +650,7 @@ int main(){
                if(espaceadmin()==1){
                     do{
                         menuadmin();
-                        switch (choix){
+                        switch (ch1){
                             case 1:
                                 strcpy(username,"admin");
                                 ajouter_reclamation(username);
@@ -613,21 +694,30 @@ int main(){
                                 trier_Priorite();
                                 break;
                             case 7:
-                                afficher_statistiques();
-                                break;
-                            case 8:
                                 supprimer_reclamation();
                                 break;
-                            case 9:
+                            case 8:
                                 changetrole();
                                 break;
-                            case 10:
+                            case 9:
+                                printf("pour total et taux des reclamation choiser 1 et pour delai choiser 2 "); 
+                                int p ;
+                                scanf("%d",&p);
+                                if(p==1){
+                                        afficher_statistiques();
+                                }else if(p==2){
+                                        afficher_delai();
+                                }else{
+                                    printf("le choixe et invalide");
+                                }
                                 break;
+                            case 10: 
+                                    printf("le choix est invalide");
                             default:
                                 printf("le choix est invalide");
                                 break;
                         }
-                    } while (choix !=10 );
+                    } while (ch1 !=10 );
     
                }
             break;
@@ -639,9 +729,13 @@ int main(){
 
                 for(int i=0;i<user_nb;i++){
                     if(strcmp(users[new].role,"Client")==0){
+                        indclt++;
+                    }
+                }
+                if (indclt != 0){
                         do{
                         menuclient();
-                        switch (choix){
+                        switch (ch1){
                             case 1:
                                 ajouter_reclamation(username);
                                 break;
@@ -649,35 +743,36 @@ int main(){
                                 afficherreclamationclient(username);
                                 break;
                             case 3 : 
+                                supprimer_reclamationclient(username);
+                                break;
+                            case 4:
+                                modifier_reclamationclient(username);
                                 break;
                             case 5:
-                                break;
-                            case 6:
-                                break;
-
-                            case 7:
                                 break;
                             default:
                                 printf("le choix est invalide");
                                 break;
                         }
-                    } while (choix !=7 );
-                    }
-               }
+                    } while (ch1 != 5 );
+                }
             break;
         case 4:
-               new = signin();
+            new = signin();
                strcpy(username, users[new].name);
                 printf("Bonjour, %s \n", username);
                 
 
                 for(int i=0;i<user_nb;i++){
                     if(strcmp(users[new].role,"Agent")==0){
+                        indclt++;
+                    }
+                }
+                if (indclt != 0){
                         do{
                         menuagent();
-                        switch (choix){
+                        switch (ch1){
                             case 1:
-                                strcpy(username,"admin");
                                 ajouter_reclamation(username);
                                 break;
                             case 2:
@@ -725,13 +820,12 @@ int main(){
                                 printf("le choix est invalide");
                                 break;
                         }
-                    } while (choix !=7 );
+                    } while (ch1 !=7 );
     
                }
-            }
             break;
         case 5:
-                printf("Quitter");
+                printf("merci ,a bientot ");
         default:
                 printf("le choix est invalide");
             break;
