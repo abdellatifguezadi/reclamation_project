@@ -53,7 +53,7 @@ void menu(){
 int motedepasse(char mdp[] , char username[]){
     int n = strlen(mdp);
     if(n<8){
-        printf("pasword invalide");
+        printf("pasword invalide\n");
         return 0;
     }
         int a=0,b=0,c=0,d=0;
@@ -69,7 +69,7 @@ int motedepasse(char mdp[] , char username[]){
         }
     }
     if(!a || !b || !c || !d ){
-        printf("utiliser les alphabet et les chifres et les symboles");
+        printf("utiliser les alphabet et les chifres et les symboles\n");
         return 0;
         
     }
@@ -198,7 +198,7 @@ void ajouter_reclamation(char username[]) {
 void afficherreclamation() {
     int i;
     if (reclamation_nb==0)
-    printf("il ya aucune reclamation");
+    printf("il ya aucune reclamation\n");
     for (i = 0; i < reclamation_nb; i++) {
 
         printf("ID: %d, nom: %s, motif: %s, description: %s, categorie: %s, statut: %s, date: %s, priorite: %s\n",
@@ -268,7 +268,7 @@ void modifier_reclamation() {
             printf("reclamation modifiee\n");
             ordre_priorit(reclamations, i);
             }else{
-            printf("le choix est invalide");
+            printf("le choix est invalide\n");
             }
             return;
         }
@@ -359,7 +359,7 @@ void traiter_reclamation() {
     getchar();
     for (i = 0; i < reclamation_nb; i++) {
         if ((reclamations[i].id == id)) {
-            printf("Changer le statut ( rejete / resoule) : ");
+            printf("Changer le statut choiser 1 pour rejete et 2 resoule) : ");
             scanf("%d",&s);
             if(s==1){
                 strcpy(reclamations[i].status,"rejete");
@@ -368,12 +368,8 @@ void traiter_reclamation() {
                 strcpy(reclamations[i].status,"resolue");
                 d++;
             }else{
-                printf("le choix est invalide");
+                printf("le choix est invalide\n");
             }
-
-            /*fgets(reclamations[i].status, 50, stdin);
-            reclamations[i].status[strcspn(reclamations[i].status, "\n")] = 0;
-            printf("reclamation traitee\n");*/
             if(d !=0){
             reclamations[i].date_traitement = time(NULL);
             }
@@ -449,7 +445,7 @@ void recherchstatut_Reclamation() {
     char statut[50];
     int trouve = 0;
     getchar();
-    printf("statut de la reclamation a rechercher (en cours, resolu, rejete) : ");
+    printf("statut de la reclamation a rechercher (en cours, resolue, rejete) : ");
     fgets(statut, 50, stdin);
     statut[strcspn(statut, "\n")] = 0;
 
@@ -741,7 +737,7 @@ int main(){
                                 traiter_reclamation();
                                 break;
                             case 5:
-                                printf("pour recherche par ID choiser 1 et par name choiser 2 et pare date 3 et par categorie choiser 4 et par status choiser 5  ");
+                                printf("pour recherche par ID choiser 1 et par name choiser 2 et pare date 3 et par categorie choiser 4 et par status choiser 5 \n ");
                                 int ch ;
                                 scanf("%d",&ch);
                                 switch (ch)
@@ -762,7 +758,7 @@ int main(){
                                             recherchstatut_Reclamation();
                                         break;
                                     default:
-                                            printf("le choix est invalide");
+                                            printf("le choix est invalide\n");
                                         break;
                                 }
                                 break;
@@ -786,13 +782,13 @@ int main(){
                                 }else if(p==3){
                                         rapport_journalier(); 
                                 }else{
-                                    printf("le choixe et invalide");
+                                    printf("le choixe et invalide\n");
                                 }
                                 break;
                             case 10: 
                                     break;
                             default:
-                                printf("le choix est invalide");
+                                printf("le choix est invalide\n");
                                 break;
                         }
                     } while (ch1 !=10 );
@@ -829,7 +825,7 @@ int main(){
                                 indclt = 0 ;
                                 break;
                             default:
-                                printf("le choix est invalide");
+                                printf("le choix est invalide\n");
                                 break;
                         }
                     } while (ch1 != 5 );
@@ -864,7 +860,7 @@ int main(){
                                 traiter_reclamation();
                                 break;
                             case 5:
-                                printf("pour recherche par ID choiser 1 et par name choiser 2 et pare date 3 et par categorie choiser 4 et par status choiser 5  ");
+                                printf("pour recherche par ID choiser 1 et par name choiser 2 et pare date 3 et par categorie choiser 4 et par status choiser 5  \n");
                                 int ch ;
                                 scanf("%d",&ch);
                                 switch (ch)
@@ -885,7 +881,7 @@ int main(){
                                             recherchstatut_Reclamation();
                                         break;
                                     default:
-                                            printf("le choix est invalide");
+                                            printf("le choix est invalide\n");
                                         break;
                                 }
                                 break;
@@ -897,7 +893,7 @@ int main(){
                                 indagnt = 0 ;
                                 break;
                             default:
-                                printf("le choix est invalide");
+                                printf("le choix est invalide\n");
                                 break;
                         }
                     } while (ch1 !=7 );
@@ -907,10 +903,10 @@ int main(){
                }
             break;
         case 5:
-                printf("merci ,a bientot ");
+                printf("merci ,a bientot \n");
                 break;
         default:
-                printf("le choix est invalide");
+                printf("le choix est invalide\n");
             break;
         }
     } while (choix !=5 );
