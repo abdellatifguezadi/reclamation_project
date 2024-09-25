@@ -24,6 +24,7 @@ typedef struct{
     time_t date_ajt ;
     time_t date_traitement;
     char priority[50];
+    char note[200];
 }reclamation;
 
 user users[max_users] ;
@@ -208,6 +209,10 @@ void afficherreclamation() {
         printf("ID: %d, nom: %s, motif: %s, description: %s, categorie: %s, statut: %s, date: %s, priorite: %s\n",
             reclamations[i].id, reclamations[i].name, reclamations[i].motif, reclamations[i].description,
             reclamations[i].categorie, reclamations[i].status, reclamations[i].date, reclamations[i].priority);
+
+        if(strcmp(reclamations[i].status,"en cours") !=0){
+            printf("note : %s\n",reclamations[i].note);
+        }
     }
 }
 
@@ -224,6 +229,9 @@ void afficherreclamationclient(char username[]) {
                     reclamations[i].id, reclamations[i].name, reclamations[i].motif, reclamations[i].description,
                     reclamations[i].categorie, reclamations[i].status, reclamations[i].date);
             }
+            if(strcmp(reclamations[i].status,"en cours") !=0){
+            printf("note : %s\n",reclamations[i].note);
+        }
         }
         if (trouve==0) {
             printf("Aucune réclamation trouvée pour l'utilisateur %s.\n", username);
@@ -363,14 +371,21 @@ void traiter_reclamation() {
     getchar();
     for (i = 0; i < reclamation_nb; i++) {
         if ((reclamations[i].id == id)) {
-            printf("Changer le statut choiser 1 pour rejete et 2 resoule) : ");
+            printf("Changer le statut choiser 1 pour rejete et 2 resoule : ");
             scanf("%d",&s);
+            getchar();
             if(s==1){
                 strcpy(reclamations[i].status,"rejete");
                 d++;
+                printf("ajouter une note : ");
+                fgets(reclamations[i].note,200,stdin);
+                reclamations[i].note[strcspn(reclamations[i].note,"\n")]=0;
             }else if(s==2){
                 strcpy(reclamations[i].status,"resolue");
                 d++;
+                printf("ajouter une note : ");
+                fgets(reclamations[i].note,200,stdin);
+                reclamations[i].note[strcspn(reclamations[i].note,"\n")]=0;
             }else{
                 printf("le choix est invalide\n");
             }
@@ -489,7 +504,7 @@ void recherchcategorie_Reclamation() {
     }
 }
 
-void trier_Priorite() {
+void afficher_Priorite() {
     int i, j;
  reclamation temp;
 
@@ -793,7 +808,7 @@ int main(){
                                 }
                                 break;
                             case 6:
-                                trier_Priorite();
+                                afficher_Priorite();
                                 break;
                             case 7:
                                 supprimer_reclamation();
