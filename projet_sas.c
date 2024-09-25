@@ -170,6 +170,10 @@ void ordre_priorit(reclamation rec[], int index) {
 }
 
 void ajouter_reclamation(char username[]) {
+     if (reclamation_nb >= max_rec) {
+        printf("aucune espace pour nouvelle reclamation\n");
+        return;
+    }
     time_t t = time(NULL);
     struct tm tm = *localtime(&t);
     reclamations[reclamation_nb].id = rand() % 10000 + 1;
@@ -239,42 +243,42 @@ void modifier_reclamation() {
             scanf("%d",&s);
             getchar();
             if(s==1){
-            printf("modifier un motif : ");
-            fgets(reclamations[i].motif, 50, stdin);
-            reclamations[i].motif[strcspn(reclamations[i].motif, "\n")] = 0;
-            printf("reclamation modifiee\n");
-            ordre_priorit(reclamations, i);
+                printf("modifier un motif : ");
+                fgets(reclamations[i].motif, 50, stdin);
+                reclamations[i].motif[strcspn(reclamations[i].motif, "\n")] = 0;
+                printf("reclamation modifiee\n");
+                ordre_priorit(reclamations, i);
             }else if(s==2){
-            printf("modifier une description : ");
-            fgets(reclamations[i].description, 200, stdin);
-            reclamations[i].description[strcspn(reclamations[i].description, "\n")] = 0;
-            printf("reclamation modifiee\n");
-            ordre_priorit(reclamations, i);
+                printf("modifier une description : ");
+                fgets(reclamations[i].description, 200, stdin);
+                reclamations[i].description[strcspn(reclamations[i].description, "\n")] = 0;
+                printf("reclamation modifiee\n");
+                ordre_priorit(reclamations, i);
             }else if(s==3){
-            printf("modifier une categorie : ");
-            fgets(reclamations[i].categorie, 50, stdin);
-            reclamations[i].categorie[strcspn(reclamations[i].categorie, "\n")] = 0;
-            printf("reclamation modifiee\n");
+                printf("modifier une categorie : ");
+                fgets(reclamations[i].categorie, 50, stdin);
+                reclamations[i].categorie[strcspn(reclamations[i].categorie, "\n")] = 0;
+                printf("reclamation modifiee\n");
             }else if(s==4){
-            printf("modifier un motif : ");
-            fgets(reclamations[i].motif, 50, stdin);
-            reclamations[i].motif[strcspn(reclamations[i].motif, "\n")] = 0;
-            printf("modifier une description : ");
-            fgets(reclamations[i].description, 200, stdin);
-            reclamations[i].description[strcspn(reclamations[i].description, "\n")] = 0;
-            printf("modifier une categorie : ");
-            fgets(reclamations[i].categorie, 50, stdin);
-            reclamations[i].categorie[strcspn(reclamations[i].categorie, "\n")] = 0;
-            printf("reclamation modifiee\n");
-            ordre_priorit(reclamations, i);
+                printf("modifier un motif : ");
+                fgets(reclamations[i].motif, 50, stdin);
+                reclamations[i].motif[strcspn(reclamations[i].motif, "\n")] = 0;
+                printf("modifier une description : ");
+                fgets(reclamations[i].description, 200, stdin);
+                reclamations[i].description[strcspn(reclamations[i].description, "\n")] = 0;
+                printf("modifier une categorie : ");
+                fgets(reclamations[i].categorie, 50, stdin);
+                reclamations[i].categorie[strcspn(reclamations[i].categorie, "\n")] = 0;
+                printf("reclamation modifiee\n");
+                ordre_priorit(reclamations, i);
             }else{
-            printf("le choix est invalide\n");
+                printf("le choix est invalide\n");
             }
             return;
         }
     }
     if(ind==0){
-    printf("reclamation non trouvee ou acces refuse\n");
+        printf("reclamation non trouvee \n");
     }
     
 }
@@ -489,24 +493,28 @@ void trier_Priorite() {
     int i, j;
  reclamation temp;
 
-    for (i = 0; i < reclamation_nb - 1; i++) {
-        for (j = 0; j < reclamation_nb - i - 1; j++) {
-            if (strcmp(reclamations[j].priority, "basse") == 0 && 
-                (strcmp(reclamations[j + 1].priority, "moyenne") == 0 || 
-                 strcmp(reclamations[j + 1].priority, "haute") == 0)) {
-                temp = reclamations[j];
-                reclamations[j] = reclamations[j + 1];
-                reclamations[j + 1] = temp;
-            } else if (strcmp(reclamations[j].priority, "moyenne") == 0 && 
-                       strcmp(reclamations[j + 1].priority, "haute") == 0) {
-                temp = reclamations[j];
-                reclamations[j] = reclamations[j + 1];
-                reclamations[j + 1] = temp;
-            }
+    printf("Le tri par priorit est termine\n");
+    for (i = 0; i < reclamation_nb; i++) {
+        if(strcmp(reclamations[i].priority, "haute") == 0){
+            printf("ID: %d, nom: %s, motif: %s, description: %s, categorie: %s, statut: %s, date: %s, priorite: %s\n",
+                reclamations[i].id, reclamations[i].name, reclamations[i].motif, reclamations[i].description,
+                reclamations[i].categorie, reclamations[i].status, reclamations[i].date, reclamations[i].priority);
         }
     }
-
-    printf("Le tri par priorit est termine\n");
+    for (i = 0; i < reclamation_nb; i++) {
+        if(strcmp(reclamations[i].priority, "moyenne") == 0){
+            printf("ID: %d, nom: %s, motif: %s, description: %s, categorie: %s, statut: %s, date: %s, priorite: %s\n",
+                reclamations[i].id, reclamations[i].name, reclamations[i].motif, reclamations[i].description,
+                reclamations[i].categorie, reclamations[i].status, reclamations[i].date, reclamations[i].priority);
+        }
+    }
+    for (i = 0; i < reclamation_nb; i++) {
+         if(strcmp(reclamations[i].priority, "basse") == 0){
+            printf("ID: %d, nom: %s, motif: %s, description: %s, categorie: %s, statut: %s, date: %s, priorite: %s\n",
+                reclamations[i].id, reclamations[i].name, reclamations[i].motif, reclamations[i].description,
+                reclamations[i].categorie, reclamations[i].status, reclamations[i].date, reclamations[i].priority);
+         }
+    }
 }
 
 void afficher_statistiques() {
@@ -587,9 +595,9 @@ void supprimer_reclamationclient(char username[]) {
     int ind = -1;
 
     for (int i = 0; i < reclamation_nb; i++) {
-        if (reclamations[i].id == id && strcmp(reclamations[i].name, username) == 0) {
+        if (reclamations[i].id == id && strcmp(reclamations[i].name, username) == 0 && strcmp(reclamations[i].status,"en cours")==0) {
             double diff = difftime(now, reclamations[i].date_ajt );
-            if (diff <= 30) {
+            if (diff <= 24*3600) {
                 ind = i;
                 break;
             } else {
@@ -606,42 +614,64 @@ void supprimer_reclamationclient(char username[]) {
         reclamation_nb--;
         printf("reclamation supprimee \n");
     } else {
-        printf("reclamation introuvable\n");
+        printf("reclamation non trouvee ou acces refuse\n");
     }
 }
 
 void modifier_reclamationclient(char username[]) {
-    int id, i;
+    int id, i, s , ind=0;
     time_t now = time(NULL);
     printf("ID de la reclamation a modifier : ");
     scanf("%d", &id);
     getchar();
 
     for (i = 0; i < reclamation_nb; i++) {
-        if (reclamations[i].id == id && strcmp(reclamations[i].name, username) == 0) {
+        if (reclamations[i].id == id && strcmp(reclamations[i].name, username) == 0 && strcmp(reclamations[i].status,"en cours")==0) {
             double diff = difftime(now, reclamations[i].date_ajt);
-            if (diff <= 3*60) {
-                printf("modifier un motif : ");
-                fgets(reclamations[i].motif, sizeof(reclamations[i].motif), stdin);
-                reclamations[i].motif[strcspn(reclamations[i].motif, "\n")] = 0;
-
-                printf("modifier une description : ");
-                fgets(reclamations[i].description, sizeof(reclamations[i].description), stdin);
-                reclamations[i].description[strcspn(reclamations[i].description, "\n")] = 0;
-
-                printf("modifier une categorie : ");
-                fgets(reclamations[i].categorie, sizeof(reclamations[i].categorie), stdin);
-                reclamations[i].categorie[strcspn(reclamations[i].categorie, "\n")] = 0;
-
-                printf("reclamation modifiee\n");
-                return;
-            } else {
-                printf("la reclamation a plus de 24 heures.\n");
+            if (diff <= 24*3600) {
+                ind++;
+                printf("pour changer le motif : 1\npour changer description: 2\npour changer categorie  : 3\npour changer tous : 4\n");
+                scanf("%d",&s);
+                getchar();
+                if(s==1){
+                    printf("modifier un motif : ");
+                    fgets(reclamations[i].motif, 50, stdin);
+                    reclamations[i].motif[strcspn(reclamations[i].motif, "\n")] = 0;
+                    printf("reclamation modifiee\n");
+                    ordre_priorit(reclamations, i);
+                }else if(s==2){
+                    printf("modifier une description : ");
+                    fgets(reclamations[i].description, 200, stdin);
+                    reclamations[i].description[strcspn(reclamations[i].description, "\n")] = 0;
+                    printf("reclamation modifiee\n");
+                    ordre_priorit(reclamations, i);
+                }else if(s==3){
+                    printf("modifier une categorie : ");
+                    fgets(reclamations[i].categorie, 50, stdin);
+                    reclamations[i].categorie[strcspn(reclamations[i].categorie, "\n")] = 0;
+                    printf("reclamation modifiee\n");
+                }else if(s==4){
+                    printf("modifier un motif : ");
+                    fgets(reclamations[i].motif, 50, stdin);
+                    reclamations[i].motif[strcspn(reclamations[i].motif, "\n")] = 0;
+                    printf("modifier une description : ");
+                    fgets(reclamations[i].description, 200, stdin);
+                    reclamations[i].description[strcspn(reclamations[i].description, "\n")] = 0;
+                    printf("modifier une categorie : ");
+                    fgets(reclamations[i].categorie, 50, stdin);
+                    reclamations[i].categorie[strcspn(reclamations[i].categorie, "\n")] = 0;
+                    printf("reclamation modifiee\n");
+                    ordre_priorit(reclamations, i);
+                }else{
+                    printf("le choix est invalide\n");
+                }
                 return;
             }
         }
     }
-    printf("reclamation non trouvee ou acces refuse.\n");
+    if(ind==0){
+        printf("reclamation non trouvee ou acces refuse\n");
+    }
 }
 
 void afficher_delai() {
